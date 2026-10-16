@@ -49,6 +49,21 @@ def test_missing_required_arg_fails():
     assert r.returncode != 0
 
 
+def test_zero_amount():
+    r = run("--amount", "0", "--from", "USD", "--to", "RUB", "--rate", "80", "--json")
+    assert r.returncode == 0, r.stderr
+    data = json.loads(r.stdout)
+    assert data["converted"] == 0.0
+
+
+def test_negative_amount():
+    # Negative amounts are valid here (e.g. a credit note / refund line on an invoice).
+    r = run("--amount", "-50", "--from", "USD", "--to", "RUB", "--rate", "80", "--json")
+    assert r.returncode == 0, r.stderr
+    data = json.loads(r.stdout)
+    assert data["converted"] == -4000.0
+
+
 if __name__ == "__main__":
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
     failed = 0
